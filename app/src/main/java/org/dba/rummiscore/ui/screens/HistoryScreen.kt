@@ -50,7 +50,12 @@ fun HistoryScreen(
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Long-term History") },
+                title = {
+                    Text(
+                        text = "Match History",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -69,7 +74,6 @@ fun HistoryScreen(
                 Text(
                     text = "Player standings",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(8.dp))
             }

@@ -103,11 +103,7 @@ fun MatchScreen(
             Spacer(Modifier.height(16.dp))
 
             // Player score cards – click to select winner
-            Text(
-                text = "Tap a player to select as winner",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondary
-            )
+
             Spacer(Modifier.height(8.dp))
 
             Row(
@@ -187,7 +183,7 @@ fun MatchScreen(
                     }
                 } else if (state.selectedWinnerId == null) {
                     Text(
-                        text = "Select the winner of this round above",
+                        text = "Select the winner of this round",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSecondary
                     )
