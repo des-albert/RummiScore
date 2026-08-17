@@ -60,16 +60,15 @@ fun MatchScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primary,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Rummikub ScoreBoard") },
+                title = { Text("Rummikub Match") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.inversePrimary
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -80,16 +79,20 @@ fun MatchScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header / New match
+            val match = state.activeMatch
+            val canScore = match != null && !match.isFinished && match.roundsPlayed < 6
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (state.activeMatch != null)
-                        "Round ${state.activeMatch!!.roundsPlayed + 1} of 6"
-                    else
-                        "No active match",
+                    text = when {
+                        match == null -> "No active match"
+                        match.isFinished -> "Match finished (${match.roundsPlayed}/6)"
+                        else -> "Round ${match.roundsPlayed + 1} of 6"
+                    },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -103,7 +106,11 @@ fun MatchScreen(
             Spacer(Modifier.height(16.dp))
 
             // Player score cards – click to select winner
-
+            Text(
+                text = "Tap a player to select as winner",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Spacer(Modifier.height(8.dp))
 
             Row(
@@ -118,7 +125,7 @@ fun MatchScreen(
                         matchPoints = sc?.matchPoints ?: 0,
                         matchWins = sc?.matchWins ?: 0,
                         isSelected = state.selectedWinnerId == player.id,
-                        onSelect = if (state.activeMatch != null && (state.activeMatch!!.roundsPlayed < 6)) {
+                        onSelect = if (canScore) {
                             { viewModel.selectWinner(player.id) }
                         } else null
                     )
@@ -127,7 +134,7 @@ fun MatchScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            if (state.activeMatch != null && state.activeMatch!!.roundsPlayed < 6) {
+            if (canScore) {
                 // Loser points input
                 val losers = state.players.filter { it.id != state.selectedWinnerId }
                 if (state.selectedWinnerId != null && losers.size == 2) {
@@ -183,12 +190,12 @@ fun MatchScreen(
                     }
                 } else if (state.selectedWinnerId == null) {
                     Text(
-                        text = "Select the winner of this round",
+                        text = "Select the winner of this round above",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            } else if (state.activeMatch != null && state.activeMatch!!.roundsPlayed >= 6) {
+            } else if (match != null && match.isFinished) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -196,7 +203,7 @@ fun MatchScreen(
                     )
                 ) {
                     Text(
-                        text = "Match complete! 6 rounds played. You can still undo, or start a New Match.",
+                        text = "Match complete (${match.roundsPlayed}/6). You can still undo, or start a New Match.",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -205,8 +212,8 @@ fun MatchScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Undo
-            if (state.activeMatch != null && state.rounds.isNotEmpty()) {
+            // Undo + optional early finish
+            if (match != null && state.rounds.isNotEmpty()) {
                 OutlinedButton(
                     onClick = { viewModel.undoLastRound() },
                     modifier = Modifier.fillMaxWidth(),
@@ -215,6 +222,16 @@ fun MatchScreen(
                     Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Undo last round")
+                }
+            }
+            if (match != null && !match.isFinished && match.roundsPlayed in 1..5) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { viewModel.finishMatch() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.isLoading
+                ) {
+                    Text("Finish match early")
                 }
             }
 

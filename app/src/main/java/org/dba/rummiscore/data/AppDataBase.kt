@@ -18,7 +18,7 @@ import org.dba.rummiscore.data.entity.Round
         Round::class,
         MatchPlayerScore::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

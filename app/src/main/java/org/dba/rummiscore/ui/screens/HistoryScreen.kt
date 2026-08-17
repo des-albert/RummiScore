@@ -30,13 +30,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.dba.rummiscore.ui.components.PlayerAvatar
 import org.dba.rummiscore.viewmodel.HistoryViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.style.TextAlign
 import org.dba.rummiscore.data.repository.MatchSummary
 import org.dba.rummiscore.data.repository.PlayerWithMatchScore
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +44,9 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-    val dateFormat = SimpleDateFormat("MMM d, yyyy  HH:mm", LocalLocale.current.platformLocale)
+    val dateFormat = DateTimeFormatter
+        .ofPattern("MMM d, yyyy  h:mm a", LocalLocale.current.platformLocale)
+        .withZone(ZoneId.systemDefault())
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -144,7 +146,7 @@ fun HistoryScreen(
                 items(state.matchHistory, key = { "match_${it.match.id}" }) { summary ->
                     MatchHistoryRow(
                         summary = summary,
-                        dateLabel = dateFormat.format(Date(summary.match.startedAt))
+                        dateLabel = dateFormat.format(Instant.ofEpochMilli(summary.match.startedAt))
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 4.dp),
@@ -215,7 +217,7 @@ private fun MatchHistoryRow(
             ) {
                 Text(
                     text = "Wins",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.width(56.dp)
@@ -240,7 +242,7 @@ private fun MatchHistoryRow(
             ) {
                 Text(
                     text = "Points",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.width(56.dp)

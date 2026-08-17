@@ -158,13 +158,14 @@ class MatchViewModel @Inject constructor(
             _uiState.update { it.copy(message = "Enter valid points for both losers") }
             return
         }
-        if (match.roundsPlayed >= 6) {
-            _uiState.update { it.copy(message = "Match already has 6 rounds") }
+        if (match.isFinished || match.roundsPlayed >= 6) {
+            _uiState.update { it.copy(message = "Match is finished") }
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+            val nextRound = match.roundsPlayed + 1
             val result = repository.recordRound(
                 matchId = match.id,
                 winnerId = winnerId,
@@ -174,14 +175,29 @@ class MatchViewModel @Inject constructor(
                 loser2Points = l2
             )
             if (result.isSuccess) {
-                _uiState.update {
-                    it.copy(
-                        selectedWinnerId = null,
-                        loser1Points = "",
-                        loser2Points = "",
-                        message = "Round ${match.roundsPlayed + 1} recorded",
-                        isLoading = false
-                    )
+                if (nextRound >= 6) {
+                    // Match complete — start a fresh match so rounds reset to 0
+                    currentMatchId = null
+                    repository.startNewMatch()
+                    _uiState.update {
+                        it.copy(
+                            selectedWinnerId = null,
+                            loser1Points = "",
+                            loser2Points = "",
+                            message = "Match complete! New match started (round 1 of 6)",
+                            isLoading = false
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            selectedWinnerId = null,
+                            loser1Points = "",
+                            loser2Points = "",
+                            message = "Round $nextRound recorded",
+                            isLoading = false
+                        )
+                    }
                 }
             } else {
                 _uiState.update {
@@ -212,13 +228,33 @@ class MatchViewModel @Inject constructor(
         }
     }
 
+    /** End the current match early (before 6 rounds). */
+    fun finishMatch() {
+        val match = _uiState.value.activeMatch ?: run {
+            _uiState.update { it.copy(message = "No active match") }
+            return
+        }
+        if (match.isFinished) {
+            _uiState.update { it.copy(message = "Match already finished") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            repository.finishMatch(match.id)
+            _uiState.update {
+                it.copy(
+                    message = "Match finished",
+                    isLoading = false,
+                    selectedWinnerId = null,
+                    loser1Points = "",
+                    loser2Points = ""
+                )
+            }
+        }
+    }
+
     fun clearMessage() {
         _uiState.update { it.copy(message = null) }
     }
 
-    fun updatePlayerName(playerId: Long, name: String) {
-        viewModelScope.launch {
-            repository.updatePlayerName(playerId, name)
-        }
-    }
 }
