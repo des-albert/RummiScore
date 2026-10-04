@@ -144,11 +144,12 @@ fun HistoryScreen(
                 }
 
                 items(state.matchHistory, key = { "match_${it.match.id}" }) { summary ->
+                    val startedAt = summary.match.startedAt
                     val finishedAt = summary.match.finishedAt
                     val dateLabel = if (finishedAt != null) {
                         dateFormat.format(Instant.ofEpochMilli(finishedAt))
                     } else {
-                        ""
+                        dateFormat.format(Instant.ofEpochMilli(startedAt))
                     }
                     MatchHistoryRow(
                         summary = summary,
