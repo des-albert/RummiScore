@@ -9,17 +9,17 @@ import org.dba.rummiscore.data.entity.Match
 
 @Dao
 interface MatchDao {
-    @Query("SELECT * FROM matches ORDER BY startedAt DESC")
+    @Query("SELECT * FROM matches ORDER BY finishedAt DESC")
     fun getAllMatches(): Flow<List<Match>>
 
     /** Latest match (finished or not) — used so a completed 6-round match stays on screen for undo. */
-    @Query("SELECT * FROM matches ORDER BY startedAt DESC LIMIT 1")
+    @Query("SELECT * FROM matches ORDER BY finishedAt DESC LIMIT 1")
     fun getActiveMatch(): Flow<Match?>
 
-    @Query("SELECT * FROM matches ORDER BY startedAt DESC LIMIT 1")
+    @Query("SELECT * FROM matches ORDER BY finishedAt DESC LIMIT 1")
     suspend fun getActiveMatchOnce(): Match?
 
-    @Query("SELECT * FROM matches WHERE isFinished = 0 ORDER BY startedAt DESC LIMIT 1")
+    @Query("SELECT * FROM matches WHERE isFinished = 0 ORDER BY finishedAt DESC LIMIT 1")
     suspend fun getUnfinishedMatchOnce(): Match?
 
     @Query("SELECT * FROM matches WHERE id = :id")

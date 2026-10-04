@@ -144,9 +144,15 @@ fun HistoryScreen(
                 }
 
                 items(state.matchHistory, key = { "match_${it.match.id}" }) { summary ->
+                    val finishedAt = summary.match.finishedAt
+                    val dateLabel = if (finishedAt != null) {
+                        dateFormat.format(Instant.ofEpochMilli(finishedAt))
+                    } else {
+                        ""
+                    }
                     MatchHistoryRow(
                         summary = summary,
-                        dateLabel = dateFormat.format(Instant.ofEpochMilli(summary.match.startedAt))
+                        dateLabel = dateLabel
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 4.dp),
